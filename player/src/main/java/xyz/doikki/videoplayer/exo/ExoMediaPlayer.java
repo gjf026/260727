@@ -28,6 +28,7 @@ import java.util.Map;
 
 import xyz.doikki.videoplayer.player.AbstractPlayer;
 import xyz.doikki.videoplayer.player.VideoViewManager;
+import xyz.doikki.videoplayer.util.DeviceCapability;
 import xyz.doikki.videoplayer.util.PlayerUtils;
 
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
@@ -52,12 +53,33 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
+        DeviceCapability capability = DeviceCapability.get(mAppContext);
+        if (mRenderersFactory == null) {
+            mRenderersFactory = new DefaultRenderersFactory(mAppContext);
+        }
+        if (mTrackSelector == null) {
+            mTrackSelector = new DefaultTrackSelector(mAppContext);
+        }
+        if (mTrackSelector instanceof DefaultTrackSelector) {
+            DefaultTrackSelector trackSelector = (DefaultTrackSelector) mTrackSelector;
+            trackSelector.setParameters(trackSelector.buildUponParameters()
+                    .setTunnelingEnabled(capability.isTV() && capability.supportsTunneledPlayback()));
+        }
+        if (mLoadControl == null) {
+            if (capability.getMemoryClass() == DeviceCapability.MEMORY_LOW) {
+                mLoadControl = new DefaultLoadControl.Builder()
+                        .setBufferDurationsMs(5_000, 15_000, 1_000, 2_000)
+                        .build();
+            } else {
+                mLoadControl = new DefaultLoadControl();
+            }
+        }
         mInternalPlayer = new SimpleExoPlayer.Builder(
                 mAppContext,
-                mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory,
-                mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector,
+                mRenderersFactory,
+                mTrackSelector,
                 new DefaultMediaSourceFactory(mAppContext),
-                mLoadControl == null ? mLoadControl = new DefaultLoadControl() : mLoadControl,
+                mLoadControl,
                 DefaultBandwidthMeter.getSingletonInstance(mAppContext),
                 new AnalyticsCollector(Clock.DEFAULT))
                 .build();

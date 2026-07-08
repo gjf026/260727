@@ -28,6 +28,7 @@ import xyz.doikki.videoplayer.player.PlayerFactory;
 import xyz.doikki.videoplayer.player.VideoView;
 import xyz.doikki.videoplayer.render.RenderViewFactory;
 import xyz.doikki.videoplayer.render.TextureRenderViewFactory;
+import xyz.doikki.videoplayer.util.DeviceCapability;
 
 public class PlayerHelper {
     public static void updateCfg(VideoView videoView, JSONObject playerCfg) {
@@ -36,7 +37,7 @@ public class PlayerHelper {
     public static void updateCfg(VideoView videoView, JSONObject playerCfg,int forcePlayerType) {
         int playerType = Hawk.get(HawkConfig.PLAY_TYPE, 0);
         int renderType = Hawk.get(HawkConfig.PLAY_RENDER, 0);
-        String ijkCode = Hawk.get(HawkConfig.IJK_CODEC, "软解码");
+        String ijkCode = Hawk.get(HawkConfig.IJK_CODEC, "硬解码");
         int scale = Hawk.get(HawkConfig.PLAY_SCALE, 0);
         try {
             playerType = playerCfg.getInt("pl");
@@ -47,6 +48,10 @@ public class PlayerHelper {
             e.printStackTrace();
         }
         if(forcePlayerType>=0)playerType = forcePlayerType;
+        DeviceCapability capability = DeviceCapability.get(videoView.getContext());
+        if (capability.shouldUseSurfaceView()) {
+            renderType = 1;
+        }
         IJKCode codec = ApiConfig.get().getIJKCodec(ijkCode);
         PlayerFactory playerFactory;
         if (playerType == 1) {
@@ -120,6 +125,9 @@ public class PlayerHelper {
             playerFactory = AndroidMediaPlayerFactory.create();
         }
         int renderType = Hawk.get(HawkConfig.PLAY_RENDER, 0);
+        if (DeviceCapability.get(videoView.getContext()).shouldUseSurfaceView()) {
+            renderType = 1;
+        }
         RenderViewFactory renderViewFactory = null;
         switch (renderType) {
             case 0:

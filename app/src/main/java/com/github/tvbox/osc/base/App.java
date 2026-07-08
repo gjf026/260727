@@ -21,6 +21,7 @@ import com.orhanobut.hawk.Hawk;
 import com.p2p.P2PClass;
 
 import me.jessyan.autosize.AutoSizeConfig;
+import xyz.doikki.videoplayer.util.DeviceCapability;
 import me.jessyan.autosize.unit.Subunits;
 
 /**
@@ -64,8 +65,14 @@ public class App extends MultiDexApplication {
         // Hawk
         Hawk.init(this).build();
         Hawk.put(HawkConfig.DEBUG_OPEN, false);
-        if (!Hawk.contains(HawkConfig.PLAY_TYPE)) {
-            Hawk.put(HawkConfig.PLAY_TYPE, 1);
+        putDefault(HawkConfig.PLAY_TYPE, 1);
+        putDefault(HawkConfig.IJK_CODEC, "硬解码");
+        putDefault(HawkConfig.PLAY_RENDER, DeviceCapability.get(this).shouldUseSurfaceView() ? 1 : 0);
+    }
+
+    private void putDefault(String key, Object value) {
+        if (!Hawk.contains(key)) {
+            Hawk.put(key, value);
         }
     }
 
