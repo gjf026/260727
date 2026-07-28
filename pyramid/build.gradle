@@ -15,7 +15,7 @@ android {
                 install "lxml"
                 install "ujson"
             //    install "pyquery"
-                install "pyquery==2.0.2"
+                install "pyquery==2.0.1"
                 install "requests"
                 install "jsonpath"
                 install "cachetools"
